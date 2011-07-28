@@ -1,0 +1,57 @@
+#!/usr/bin/env python
+
+###################
+# Aldrich de Mata #
+###################
+
+"""Usage: ./email_regex.py [filename]"""
+
+import re
+import sys
+
+def validate(emailadd):
+  """Validate the e-mail address. Include all 
+     characters permitted by RFC2822 in username. 
+     Leading, trailing or consecutive dots are 
+     not allowed. Regex line 1 and 2 is username. 
+     Line 3 and 4 is @domain name"""
+
+  matchobj=re.compile(r"""^[\w!#$%&'*+/=?`{|}~^.-]+
+                      (?:\.[!#$%&'*+/=?`{|}~^-]+)*
+                      @[A-Z0-9-]+
+                      (?:\.[A-Z0-9-]+)*$""", re.X|re.I)
+
+  matchoutput= matchobj.match(emailadd)
+  if matchoutput:
+    return matchoutput.group()
+
+def main():
+  """Process e-mail addresses in file"""
+ 
+  if len(sys.argv) < 2:
+    sys.exit(__doc__)
+
+  fh = None
+  try:
+    fh = open(sys.argv[1])
+    for lines in [lines.strip() for lines in fh.readlines()]:
+       if not lines:
+          # Empty line
+          print ''
+          continue
+
+       if validate(lines):
+          # E-mail is valid
+          print 'true'
+       else:
+          print 'false'   
+ 
+  except Exception, e:
+    print e
+    sys.exit(e)
+  finally:
+    if fh:
+      fh.close()
+
+if __name__ == '__main__':
+  main()

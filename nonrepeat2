@@ -1,0 +1,53 @@
+#!/usr/bin/python
+
+###################
+# Aldrich de Mata #
+###################
+
+import collections
+import sys
+
+def non_repeated_char(filestring):
+  """Catching first non-repeated characters
+     using a dictionary and list. Code runs
+     in O(n). 
+  """
+  #Create a dictionary for the characters
+  counts = collections.defaultdict(int)
+  strlist = []
+  for fchar in filestring:
+     #count the characters in the dictionary
+     #key=character, value=incremented count
+     #repeating characters will have a value of 2+
+     counts[fchar] += 1
+     #append the character to the list if 
+     #counter is 1 
+     if counts[fchar] == 1:
+       strlist.append(fchar)
+ 
+  for fchar in strlist:
+     #Check the list for first non-repeated char
+     if counts[fchar] == 1:
+       return fchar
+
+  return None
+
+def main():
+  """Read a text file and output the 
+     first non-repeating character
+  """
+
+  if len(sys.argv) < 2:
+    print 'Usage: nonrepeat.py [file]'
+  else: 
+    fh=open(sys.argv[1], 'r')
+    flines=fh.readlines()
+    fh.close()
+    
+    for lines in flines:
+      print(non_repeated_char(lines))
+
+
+if __name__ == "__main__":
+  main()
+

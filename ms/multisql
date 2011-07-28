@@ -1,0 +1,183 @@
+#!/usr/bin/python
+
+import MySQLdb
+import commands
+import scan_virusbuster
+import scan_mcafee
+
+
+class runSQL:
+
+  def __init__(self):
+
+    self.avfunc={"mcafee":scan_mcafee, "virusbuster":scan_virusbuster}
+
+    # Use $HOME/.netrc in host
+    HOST = 'host1.com'
+
+    # Read credential from the .netrc file 
+    secrets = netrc.netrc()
+    username, account, password = secrets.authenticators( HOST )
+    
+    DBSERVER="10.1.1.35"
+    DBUSER=username
+    DBPASSWD=password
+    DB="MULTISCANNER"
+
+    try:
+      self.conn=MySQLdb.connect(DBSERVER, DBUSER, DBPASSWD, DB)
+ 
+    except MySQLdb.Error, e:
+      print "Error %d: %s" % (e.args[0], e.args[1])
+
+  def getConnection(self):
+    return self.conn 
+
+  def getCursor(self):
+    
+    self.cursor=self.conn.cursor()
+    return self.cursor
+
+
+  def runSubmitIDSQL(self, scan_type, cursor):
+  
+    self.cursor=cursor 
+
+    getSubmitQ="SELECT SUBMISSION_ID FROM SUBMISSIONS WHERE COMPLETED=0 AND SUBMISSION_ID NOT IN (SELECT SUBMISSION_ID FROM RESULTS WHERE SCAN_TYPE_ID=%s) ORDER BY PRIORITY DESC, SUBMIT_TIME ASC LIMIT 1"
+    getsubmitValues = (scan_type) 
+    print getSubmitQ % scan_type
+    try:
+        self.cursor.execute(getSubmitQ,getsubmitValues)
+        self.conn.commit() 
+    except MySQLdb.Error, e:
+        print "exception in running the query: "+str(e)
+    submission_res=self.cursor.fetchone()
+    #print "executaed query: "+getSubmitQ
+    print "scntype_id = "+str(scan_type)
+    print "============================================="
+    print submission_res
+    print "============================================="
+    return submission_res
+
+  def populateResultsData(self, i, submit_id, scan_type, scanner_id, cursor, connection):	
+
+    self.conn=connection
+    self.cursor=cursor
+
+    #print "Populating RESULTS.sub_id, RESULTS.scan_type_id, etc."
+    insertQ="INSERT INTO RESULTS (submission_id, scan_type_id) VALUES (%s, %s)" 
+    insertValues=(submit_id, scan_type)
+    print insertQ % insertValues
+    try:
+        self.cursor.execute(insertQ,insertValues)
+        self.conn.commit()
+    except MySQLdb.Error, e:
+        print "exception in running the query: "+str(e)
+   
+   
+ 
+    #Get last result_id
+    selectQ="SELECT RESULT_ID FROM RESULTS WHERE SUBMISSION_ID=%s AND SCAN_TYPE_ID=%s" 
+    selectValues=(submit_id,scan_type)  
+    print selectQ % selectValues
+    try:
+        self.cursor.execute(selectQ,selectValues)
+        self.conn.commit()
+    except MySQLdb.Error, e:
+        print "exception in running the query: "+str(e)
+    result_id_row=self.cursor.fetchone()
+    result_id = result_id_row[0]
+    print "============================================="
+    print "Results.Result_ID: %s" % result_id
+    print "============================================="
+
+     
+    rawdata, detection = self.avfunc[i].parseoutput("/var/www/html/queue/" + str(submit_id)) 
+    print "============================================="
+    print "RawData: %s" % rawdata
+    print "Detection: %s" % detection 
+    print "============================================="
+
+    
+    #Populate RAW_DATA.data
+    insertQ="INSERT INTO RAW_DATA (data) VALUES (%s)" 
+    try: 
+        self.cursor.execute(insertQ,rawdata)
+        self.conn.commit()
+    except MySQLdb.Error, e:
+        print "exception in running the query: "+str(e)
+    
+     
+    #rawdata_id = self.conn.insert_id()
+    selectQ="SELECT LAST_INSERT_ID()" 
+    try:
+        self.cursor.execute(selectQ)
+        self.conn.commit()
+    except MySQLdb.Error, e:
+        print "exception in running the query: "+str(e)
+    rawdata_id_row=self.cursor.fetchone()
+    rawdata_id=rawdata_id_row[0]
+    print "============================================="
+    print "Raw_data.Raw_id: %s" % rawdata_id
+    print "============================================="
+
+
+       
+    #GET DATA FOR RESULTS TABLE   
+
+    #Get SCAN_TYPES.scan_type_id
+    selectQ="SELECT * FROM SCAN_TYPES WHERE name=%s" 
+    try:
+        self.cursor.execute(selectQ,(i,))
+        self.conn.commit()
+    except MySQLdb.Error, e:
+        print "exception in running the query: "+str(e)
+    scan_type_id_row = self.cursor.fetchone()    
+    print "============================================="
+    print "Scan_type_id & Name: %s %s" % (scan_type_id_row[0], scan_type_id_row[1]) 
+    print "============================================="
+
+    
+ 
+    #Get AV signature
+    av_signature = commands.getoutput("/ms/scan_" + i + ".py -s")
+    print "============================================="
+    print "av signature: %s" % av_signature
+    print "============================================="
+ 
+    #Get AV engine 
+    av_engine = commands.getoutput("/ms/scan_" + i + ".py -e")
+    print "============================================="
+    print "av engine: %s" % av_engine
+    print "============================================="
+ 
+    #Get parsed AV result     
+    print "============================================="
+    print "av detect: %s" % detection
+    print "============================================="
+ 
+    if detection == "None":
+      classification = "None"
+    else:
+      classification = "Malicious"
+ 
+
+    #Update RESULTS table 
+    print "Updating RESULTS table"
+    insertQ="UPDATE RESULTS SET raw_id=%s, scanner_id=%s, sig_version=%s, eng_version=%s, classification=%s, additional_info=%s, completed=1 WHERE RESULT_ID=%s" 
+    updatevalues = (rawdata_id, scanner_id, av_signature, av_engine, classification, detection, result_id)
+    print insertQ % updatevalues
+    try:
+        self.cursor.execute(insertQ, updatevalues)
+        self.conn.commit()
+    except MySQLdb.Error, e:
+        print "exception in running the query: "+str(e)
+  
+    
+
+  def closeDB(self): 
+    #Close database
+    self.conn.close() 
+ 
+
+ 

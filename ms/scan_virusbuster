@@ -1,0 +1,96 @@
+#!/usr/bin/python
+
+import getopt
+import sys
+import commands
+import string
+import time
+import re
+
+def usage():
+    print "scan_virusbuster.py [-v] [-h] [-e] [-s] [-o] [-p] file"
+    sys.exit(0)
+
+def version():
+    filepath='/opt/vbscan/vbscan -V'
+    avversion = commands.getoutput(filepath)
+    found = string.find(avversion, '(')
+    dbstr = avversion[found+1:found+11]
+
+    #parse Tue Dec 10 18:07:14 2002
+    datetup = time.strptime(dbstr, "%Y-%m-%d") 
+    
+    #change format of month
+    print time.strftime("%Y-%d-%m 00:00:00", datetup)
+
+def parseoutput(file):
+    output = commands.getoutput('/opt/vbscan/vbscan -a skip ' + file)
+    print output
+    #virus found: eicar_test_file
+    regobj= re.compile(r'.*(virus|trojan)\s+found\:\s+(\S+)\s+')
+    detection = regobj.search(output)
+    if detection:
+        parsed = detection.group(2)
+        print detection.group(2)
+    else:
+        parsed = 'None' 
+        print 'None'
+
+    return output,parsed
+
+def scanoutput(file):
+    clamoutp = commands.getoutput('/opt/vbscan/vbscan -a skip ' + file)
+    print clamoutp 
+
+def engine():
+    ver = commands.getoutput('/opt/vbscan/vbscan --terse')
+    regobj = re.compile(r'.*Scanner\s+(\d+\.\d+\.\d+)')
+    detection = regobj.search(ver)  
+    if detection:
+        print detection.group(1) 
+    else:
+        print 'None'
+
+def signature():
+    ver = commands.getoutput('/opt/vbscan/vbscan --terse')
+    regobj = re.compile(r'.*VDB:\s+(\d+\.\d+\.\d+\/\d+\.\d+)')
+    detection = regobj.search(ver)  
+    if detection:
+        print detection.group(1)
+    else:
+        print 'None'        
+
+def main():
+    
+    if len(sys.argv) < 2:
+        usage()    
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "vhesop")
+    except getopt.GetoptError:
+        # print help and exit
+        usage()
+        sys.exit(2)
+
+    for o, a in opts:
+        if o == "-v":
+            version()   
+        elif o == "-h":
+            usage()
+        elif o == "-e":
+            engine()    
+        elif o == "-s":
+            signature() 
+   	elif o == "-o":
+    	    for filetoscan in args:
+              scanoutput(filetoscan)
+	elif o == "-p":
+    	    for filetoscan in args:
+              parseoutput(filetoscan)
+
+
+if __name__ == "__main__":
+    main()
+
+
+

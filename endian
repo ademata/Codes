@@ -1,0 +1,17 @@
+#!/usr/bin/env python
+
+###################
+# Aldrich de Mata #
+###################
+
+"""Big-endian platforms will have the value 'big'  
+   Small endian platforms will have the value 'small'"""
+
+import sys
+
+if sys.byteorder == 'big':
+  print 'BigEndian'
+elif sys.byteorder == 'little':
+  print 'LittleEndian'
+else:
+  pass

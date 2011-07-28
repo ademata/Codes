@@ -1,0 +1,52 @@
+#!/usr/bin/python
+
+import MySQLdb
+import time
+import multisql as ms
+
+
+scan_type=7
+scanner_id=4 
+av="mcafee"  
+msg1="Mcafeescan is running..."
+msg2=">>>Mcafee queue<<<"
+
+
+##############################
+#                            #
+#  DATABASE ROUTINES - MAIN  #
+#                            #
+##############################
+
+print msg1
+
+antivirSQL = ms.runSQL()
+
+while(True):
+
+  submit_id=""
+  
+  connection = antivirSQL.getConnection()
+  cursor = antivirSQL.getCursor()
+  submission_res=antivirSQL.runSubmitIDSQL(scan_type,cursor)
+  
+  #log fetched row
+  if (submission_res!=None):
+       print "result returned by query: "+str(submission_res) 
+       for col in submission_res:
+          print col
+       submit_id=submission_res[0]
+  
+       antivirSQL.populateResultsData(av, submit_id, scan_type, scanner_id, cursor, connection)
+       cursor.close()
+    
+  else:
+       cursor.close()  
+       print msg2	
+       time.sleep(5)
+   
+antivirSQL.closeDB()   
+ 	
+ 
+ 
+  

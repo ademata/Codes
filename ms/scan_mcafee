@@ -1,0 +1,84 @@
+#!/usr/bin/python
+
+import getopt
+import sys
+import commands
+import string
+import time
+import re
+
+def usage():
+    print "scan_mcafee.py [-v] [-h] [-e] [-s] [-o] [-p] file"
+    sys.exit(0)
+
+def parseoutput(file):
+  
+    output = commands.getoutput('/opt/mcafee/uvscan ' + file)
+    #Found: Eicar Test Signature
+    regobj = re.compile(r'.*Found.*?\s+(.*)(\.|\!\!\!)')
+    detection = regobj.search(output)
+    if detection:
+        parsed = detection.group(1)
+        print detection.group(1)
+    else:
+        parsed = 'None'
+        print 'None'
+
+    return output,parsed   
+  
+def engine():
+  
+    ver = commands.getoutput('/opt/mcafee/uvscan --version')
+    regobj = re.compile(r'.*AV Engine version: (\d+\.\d+)')
+    detection = regobj.search(ver)  
+    if detection:
+        print detection.group(1)
+    else:
+        print 'None'
+  
+def signature():
+  
+    ver = commands.getoutput('/opt/mcafee/uvscan --version')
+    regobj = re.compile(r'.*Dat set version: (\d+)')
+    detection = regobj.search(ver)  
+    if detection:
+        print detection.group(1)
+    else:
+        print 'None'        
+  
+def scanoutput(file):
+
+    output = commands.getoutput('/opt/mcafee/uvscan ' + file)
+    print output
+
+def main():
+    
+    if len(sys.argv) < 2:
+        usage()
+    
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "vhesop")
+    except getopt.GetoptError:
+        # print help and exit
+        usage()
+        sys.exit(2)
+
+    for o, a in opts:
+        elif o == "-h":
+            usage()
+        elif o == "-e":
+            engine()
+        elif o == "-s":
+            signature()
+        elif o == "-o":
+	    for filetoscan in args:	
+       	      scanoutput(filetoscan)
+ 	elif o == "-p":
+	    for filetoscan in args:
+              parseoutput(filetoscan)
+
+if __name__ == "__main__":
+    main()
+
+
+
