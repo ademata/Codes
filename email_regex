@@ -16,7 +16,7 @@ def validate(emailadd):
      not allowed. Regex line 1 and 2 is username. 
      Line 3 and 4 is @domain name"""
 
-  matchobj=re.compile(r"""^[\w!#$%&'*+/=?`{|}~^.-]+
+  matchobj=re.compile(r"""^[\w!#$%&'*+/=?`{|}~^-]+
                       (?:\.[!#$%&'*+/=?`{|}~^-]+)*
                       @[A-Z0-9-]+
                       (?:\.[A-Z0-9-]+)*$""", re.X|re.I)
