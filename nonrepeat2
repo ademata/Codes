@@ -10,7 +10,9 @@ import sys
 def non_repeated_char(filestring):
   """Catching first non-repeated characters
      using a dictionary and list. Code runs
-     in O(n). 
+     in O(n). Performance is directly propor
+     tional to the size of data because the 
+     code is probing a list.
   """
   #Create a dictionary for the characters
   counts = collections.defaultdict(int)
