@@ -26,7 +26,7 @@ while(True):
 
   submit_id=""
   
-  connection = antivirSQL.getConnection()
+  connection = antivirSQL.getConnection() # multisql.runSQL(class).getConnection
   cursor = antivirSQL.getCursor()
   submission_res=antivirSQL.runSubmitIDSQL(scan_type,cursor)
   
