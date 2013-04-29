@@ -41,6 +41,7 @@ while(True):
           print col
        submit_id=submission_res[0]
   
+       # Update data of RESULTS table
        antivirSQL.populateResultsData(av, submit_id, scan_type, scanner_id, cursor, connection)
        cursor.close()
     
