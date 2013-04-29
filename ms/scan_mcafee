@@ -57,7 +57,7 @@ def main():
         usage()
     
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "vhesop")
+        opts, args = getopt.getopt(sys.argv[1:], "hesop")
     except getopt.GetoptError:
         # print help and exit
         usage()
@@ -67,13 +67,18 @@ def main():
         elif o == "-h":
             usage()
         elif o == "-e":
+            # Get AV engine version
             engine()
         elif o == "-s":
+            # Get .dat version 
             signature()
         elif o == "-o":
+            # Display scan log output
 	    for filetoscan in args:	
        	      scanoutput(filetoscan)
  	elif o == "-p":
+            # Parse scan log output for the 
+            # string found
 	    for filetoscan in args:
               parseoutput(filetoscan)
 
