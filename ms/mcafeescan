@@ -26,8 +26,11 @@ while(True):
 
   submit_id=""
   
+  # Get connection object 
   connection = antivirSQL.getConnection() # multisql.runSQL(class).getConnection
+  # Get cursor object
   cursor = antivirSQL.getCursor()
+
   submission_res=antivirSQL.runSubmitIDSQL(scan_type,cursor)
   
   #log fetched row
