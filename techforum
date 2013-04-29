@@ -32,7 +32,7 @@ class TechForum(Publisher):
     self.postname = None
 
   def register(self, userObj):
-    # Registering objects that would receive notifications
+    # Register objects that would receive notifications
     if userObj not in self._listOfUsers:
       self._listOfUsers.append(userObj)
 
@@ -49,11 +49,9 @@ class TechForum(Publisher):
       objects.notify(self.postname)
  
   def writeNewPost(self, postname):
-    # Notify changes that occur in the main object to the 
-    # registered objects (Subscriber object) 
-    # via registered object’s method (Notify method)
-
-    # User writes a post.
+    # User writes a post. Triggers a state change that 
+    # leads the Publisher to call its notification method
+   
     self.postname = postname
     # Post is published and notification is sent to all
     self.notifyAll()
