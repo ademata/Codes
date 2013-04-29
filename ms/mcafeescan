@@ -30,7 +30,8 @@ while(True):
   connection = antivirSQL.getConnection() # multisql.runSQL(class).getConnection
   # Get cursor object
   cursor = antivirSQL.getCursor()
-
+  
+  # Get not completed and not processed Submission ID 
   submission_res=antivirSQL.runSubmitIDSQL(scan_type,cursor)
   
   #log fetched row
