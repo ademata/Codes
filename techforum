@@ -1,7 +1,16 @@
 #!/usr/bin/python
 
 """Python snippet for a Technical Forum where technical posts 
-   are published by different users"""
+   are published by different users. It uses the Observer pattern. 
+   
+   Wikipedia:
+   The observer pattern (a subset of the publish/subscribe pattern) 
+   is a software design pattern in which an object, called the subject, 
+   maintains a list of its dependants, called observers, and notifies 
+   them automatically of any state changes, usually by calling one of 
+   their methods. It is mainly used to implement distributed event 
+   handling systems.
+"""
 
 class Publisher:
   def __init__(self):
@@ -21,15 +30,29 @@ class TechForum(Publisher):
   def __init__(self):
     self._listOfUsers = []
     self.postname = None
+
   def register(self, userObj):
+    # Registering objects that would receive notifications
     if userObj not in self._listOfUsers:
       self._listOfUsers.append(userObj)
+
   def unregister(self, userObj):
-    self._listOfUsers.remove(userObj)
+    # Unregister objects that wont receive further notification
+      self._listOfUsers.remove(userObj)
+
   def notifyAll(self):
+    # Notify changes that occur in the main object to the 
+    # registered objects (Subscriber object) 
+    # via registered object’s method (Notify method)
+
     for objects in self._listOfUsers:
       objects.notify(self.postname)
+ 
   def writeNewPost(self, postname):
+    # Notify changes that occur in the main object to the 
+    # registered objects (Subscriber object) 
+    # via registered object’s method (Notify method)
+
     # User writes a post.
     self.postname = postname
     # Post is published and notification is sent to all
@@ -45,10 +68,18 @@ class Subscriber:
 
 class User1(Subscriber):
   def notify(self,postname):
+    # A method that is used by the Publisher Class
+    # to notify the objects (Subscribers) registered 
+    # with it of any change that occurs
+    
     print 'User1 notfied of a new post: %s' % postname
 
 class User2(Subscriber):
   def notify(self, postname):
+    # A method that is used by the Publisher Class
+    # to notify the objects (Subscribers) registered 
+    # with it of any change that occurs
+    
     print 'User2 notfied of a new post: %s' % postname
 
 class SisterSites(Subscriber):
